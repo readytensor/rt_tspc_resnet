@@ -1,0 +1,7 @@
+{
+  "encode_len": 6,
+  "max_epochs": 100,
+  "lr": 1e-3,
+  "batch_size": 64,
+  "random_state": 42
+}
