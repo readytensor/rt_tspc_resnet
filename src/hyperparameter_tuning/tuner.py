@@ -6,12 +6,14 @@ import pandas as pd
 from config import paths
 from logger import get_logger
 from typing import Any, Callable, Dict
-from schema.data_schema import TSAnnotationSchema
+from schema.data_schema import TimeStepClassificationSchema
 from utils import read_json_as_dict, save_dataframe_as_csv
 from prediction.predictor_model import evaluate_predictor_model, train_predictor_model
 from preprocessing.preprocess import (
     get_preprocessing_pipelines,
     fit_transform_with_pipeline,
+    fit_pipeline,
+    transform_data,
 )
 
 HPT_RESULTS_FILE_NAME = "HPT_results.csv"
@@ -84,7 +86,7 @@ class HyperParameterTuner:
         self,
         train_split: pd.DataFrame,
         valid_split: pd.DataFrame,
-        data_schema: TSAnnotationSchema,
+        data_schema: TimeStepClassificationSchema,
         preprocessing_config: dict,
     ) -> Dict[str, Any]:
         """Runs the hyperparameter tuning process.
@@ -92,7 +94,7 @@ class HyperParameterTuner:
         Args:
             train_splits (pd.DataFrame): Training data splits.
             valid_splits (pd.DataFrame): Validation data splits.
-            data_schema: (TSAnnotationSchema) Data schema.
+            data_schema: (TimeStepClassificationSchema) Data schema.
             preprocessing_config: (dict) Preprocessing configuration.
 
         Returns:
@@ -124,7 +126,7 @@ class HyperParameterTuner:
         self,
         train_split: pd.DataFrame,
         valid_split: pd.DataFrame,
-        data_schema: TSAnnotationSchema,
+        data_schema: TimeStepClassificationSchema,
         preprocessing_config: dict,
     ) -> Callable:
         """Gets the objective function for hyperparameter tuning.
@@ -132,7 +134,7 @@ class HyperParameterTuner:
         Args:
             train_split (pd.DataFrame): Training data split.
             valid_split (pd.DataFrame): Validation data split.
-            data_schema (TSAnnotationSchema): Data schema.
+            data_schema (TimeStepClassificationSchema): Data schema.
             preprocessing_config (dict): Preprocessing configuration.
 
         Returns:
@@ -156,20 +158,42 @@ class HyperParameterTuner:
                 training_pipeline, train_split
             )
 
+            label_encoder = training_pipeline.named_steps["target_encoder"].encoders[
+                data_schema.target
+            ]
+
+            truth_labels = valid_split[data_schema.target].map(label_encoder).values
+            unlabeled_valid_split = valid_split.drop(columns=[data_schema.target])
+            inference_pipeline = fit_pipeline(inference_pipeline, train_split)
+
+            transformed_valid_data = transform_data(
+                inference_pipeline, unlabeled_valid_split
+            )
+
+            trimmed_encode_length = {"encode_len": transformed_data.shape[1]}
+
+            if transformed_data.shape[1] != transformed_valid_data.shape[1]:
+                print(
+                    "The provided encode length cannot be applied to both datasets as one of them is shorter than encode length."
+                )
+                return 1.0e6
+
+            hyperparameters.update(trimmed_encode_length)
+
             # train model
             classifier = train_predictor_model(
                 train_data=transformed_data,
                 data_schema=data_schema,
                 hyperparameters=hyperparameters,
-            )
-
-            _, transformed_valid_data = fit_transform_with_pipeline(
-                inference_pipeline, valid_split
+                padding_value=preprocessing_config["padding_value"],
             )
 
             # evaluate the model
             score = round(
-                evaluate_predictor_model(classifier, transformed_valid_data), 6
+                evaluate_predictor_model(
+                    classifier, transformed_valid_data, truth_labels
+                ),
+                6,
             )
             if np.isnan(score) or math.isinf(score):
                 # sometimes loss becomes inf/na, so use a large "bad" value
@@ -240,7 +264,7 @@ class HyperParameterTuner:
 def tune_hyperparameters(
     train_split: pd.DataFrame,
     valid_split: pd.DataFrame,
-    data_schema: TSAnnotationSchema,
+    data_schema: TimeStepClassificationSchema,
     preprocessing_config: dict,
     hpt_results_dir_path: str,
     is_minimize: bool = True,
@@ -257,7 +281,7 @@ def tune_hyperparameters(
     Args:
         train_split (pd.DataFrame): Training data.
         valid_split (pd.DataFrame): Validation data.
-        data_schema (TSAnnotationSchema): Data schema.
+        data_schema (TimeStepClassificationSchema): Data schema.
         preprocessing_config (dict): Preprocessing configuration.
         hpt_results_dir_path (str): Dir path to the hyperparameter tuning results file.
         is_minimize (bool, optional): Whether the metric should be minimized.

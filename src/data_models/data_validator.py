@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, validator
 
-from schema.data_schema import TSAnnotationSchema
+from schema.data_schema import TimeStepClassificationSchema
 
 
-def get_data_validator(schema: TSAnnotationSchema, is_train: bool) -> BaseModel:
+def get_data_validator(schema: TimeStepClassificationSchema, is_train: bool) -> BaseModel:
     """
     Returns a dynamic Pydantic data validator class based on the provided schema.
 
@@ -26,8 +26,8 @@ def get_data_validator(schema: TSAnnotationSchema, is_train: bool) -> BaseModel:
     If any of these checks fail, the validator will raise a ValueError.
 
     Args:
-        schema (TSAnnotationSchema): An instance of
-                                                TSAnnotationSchema.
+        schema (TimeStepClassificationSchema): An instance of
+                                                TimeStepClassificationSchema.
         is_train (bool): Whether the data is for training or not. Determines whether
             the presence of a target field is required in the data.
 
@@ -46,7 +46,7 @@ def get_data_validator(schema: TSAnnotationSchema, is_train: bool) -> BaseModel:
 
             if schema.id_col not in data.columns:
                 raise ValueError(
-                    f"ID field '{schema.id}' is not present in the given data"
+                    f"ID field '{schema.id_col}' is not present in the given data"
                 )
 
             if is_train:
@@ -100,14 +100,14 @@ def get_data_validator(schema: TSAnnotationSchema, is_train: bool) -> BaseModel:
 
 
 def validate_data(
-    data: pd.DataFrame, data_schema: TSAnnotationSchema, is_train: bool
+    data: pd.DataFrame, data_schema: TimeStepClassificationSchema, is_train: bool
 ) -> pd.DataFrame:
     """
     Validates the data using the provided schema.
 
     Args:
         data (pd.DataFrame): The train or test data to validate.
-        data_schema (TSAnnotationSchema): An instance of
+        data_schema (TimeStepClassificationSchema): An instance of
             inaryClassificationSchema.
         is_train (bool): Whether the data is for training or not.
 

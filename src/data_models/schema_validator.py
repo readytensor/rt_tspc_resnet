@@ -40,7 +40,7 @@ class Target(BaseModel):
 
     name: str
     description: str
-    classes: List[str]
+    classes: List[Union[str, int, float]]
 
     @validator("classes", allow_reuse=True)
     def target_classes_are_two_and_unique_and_not_empty_str(cls, target_classes):
@@ -81,7 +81,6 @@ class Feature(BaseModel):
     dataType: DataType
     nullable: bool
     example: Optional[float]
-    categories: Optional[List[str]]
 
     @validator("example", always=True, allow_reuse=True)
     def example_is_present_with_data_type_is_numeric(cls, v, values):
@@ -91,31 +90,6 @@ class Feature(BaseModel):
                 f"`example` must be present and a float or an integer "
                 f"when dataType is NUMERIC. Check field: {values}"
             )
-        return v
-
-    @validator("categories", always=True, allow_reuse=True)
-    def categories_are_present_with_data_type_is_categorical(cls, v, values):
-        data_type = values.get("dataType")
-        if data_type == "CATEGORICAL" and v is None:
-            raise ValueError(
-                "`categories` must be present when dataType is CATEGORICAL. "
-                f"Check field: {values}"
-            )
-        return v
-
-    @validator("categories", always=True, allow_reuse=True)
-    def categories_are_non_empty_strings(cls, v, values):
-        categories = values.get("categories")
-        if categories is not None:
-            if len(categories) == 0:
-                raise ValueError(
-                    f"`categories` must not be empty. Check field: {values}"
-                )
-            for category in categories:
-                if str(category) == "" or not isinstance(category, str):
-                    raise ValueError(
-                        f"`categories` must be a list of strings. Check field: {values}"
-                    )
         return v
 
 
@@ -138,9 +112,9 @@ class SchemaModel(BaseModel):
 
     @validator("modelCategory", allow_reuse=True)
     def valid_problem_category(cls, v):
-        if v != "time_series_annotation":
+        if v != "time_step_classification":
             raise ValueError(
-                f"modelCategory must be 'time_series_annotation'. Given {v}"
+                f"modelCategory must be 'time_step_classification'. Given {v}"
             )
         return v
 

@@ -68,6 +68,20 @@ def fit_transform_with_pipeline(
     return trained_pipeline, transformed_data
 
 
+def fit_pipeline(pipeline: Pipeline, data: pd.DataFrame) -> Pipeline:
+    """
+    Fit the preprocessing pipeline.
+
+    Args:
+        pipeline (Pipeline): The preprocessing pipeline.
+        data (pd.DataFrame): The data as a numpy array
+
+    Returns:
+        Pipeline: Fitted preprocessing pipeline.
+    """
+    return train_pipeline(pipeline, data)
+
+
 def transform_data(
     preprocess_pipeline: Any, data: pd.DataFrame
 ) -> Tuple[pd.DataFrame, Union[pd.Series, None]]:

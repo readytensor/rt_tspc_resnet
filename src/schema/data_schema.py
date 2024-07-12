@@ -9,11 +9,11 @@ from utils import read_json_as_dict
 SCHEMA_FILE_NAME = "schema.joblib"
 
 
-class TSAnnotationSchema:
+class TimeStepClassificationSchema:
     """
-    A class for loading and providing access to a multiclass classification schema.
+    A class for loading and providing access to a time step classification schema.
 
-    This class allows users to work with a generic schema for multiclass classification
+    This class allows users to work with a generic schema for time step classification
     problems, enabling them to create algorithm implementations that are not hardcoded
     to specific feature names. The class provides methods to retrieve information about
     the schema, such as the ID field, target field, allowed values for the target
@@ -24,7 +24,7 @@ class TSAnnotationSchema:
 
     def __init__(self, schema_dict: dict) -> None:
         """
-        Initializes a new instance of the `TSAnnotationSchema` class
+        Initializes a new instance of the `TimeStepClassificationSchema` class
         and using the schema dictionary.
 
         Args:
@@ -43,9 +43,7 @@ class TSAnnotationSchema:
         Gets the model category.
 
         Returns:
-            str: The category of the machine learning model
-                (e.g., multiclass_classification, multi-class_classification,
-                regression, object_detection, etc.).
+            str: The category of the machine learning model: e.g time_step_classification.
         """
         return self.schema["modelCategory"]
 
@@ -350,10 +348,10 @@ class TSAnnotationSchema:
             List[str]: The list of all field names (ID field, target field, and
                 all features).
         """
-        return [self.id, self.target] + self.features
+        return [self.id_col, self.target] + self.features
 
 
-def load_json_data_schema(schema_dir_path: str) -> TSAnnotationSchema:
+def load_json_data_schema(schema_dir_path: str) -> TimeStepClassificationSchema:
     """
     Load the JSON file schema into a dictionary, validate the schema dict for
     its correctness, and use the validated schema to instantiate the schema provider.
@@ -362,21 +360,21 @@ def load_json_data_schema(schema_dir_path: str) -> TSAnnotationSchema:
     - schema_dir_path (str): Path from where to read the schema json file.
 
     Returns:
-        TSAnnotationSchema: An instance of the
-                                        TSAnnotationSchema.
+        TimeStepClassificationSchema: An instance of the
+                                        TimeStepClassificationSchema.
     """
     schema_dict = read_json_as_dict(input_path=schema_dir_path)
     validated_schema_dict = validate_schema_dict(schema_dict=schema_dict)
-    data_schema = TSAnnotationSchema(validated_schema_dict)
+    data_schema = TimeStepClassificationSchema(validated_schema_dict)
     return data_schema
 
 
-def save_schema(schema: TSAnnotationSchema, save_dir_path: str) -> None:
+def save_schema(schema: TimeStepClassificationSchema, save_dir_path: str) -> None:
     """
     Save the schema to a JSON file.
 
     Args:
-        schema (TSAnnotationSchema): The schema to be saved.
+        schema (TimeStepClassificationSchema): The schema to be saved.
         save_dir_path (str): The dir path to save the schema to.
     """
     if not os.path.exists(save_dir_path):
@@ -385,7 +383,7 @@ def save_schema(schema: TSAnnotationSchema, save_dir_path: str) -> None:
     joblib.dump(schema, file_path)
 
 
-def load_saved_schema(save_dir_path: str) -> TSAnnotationSchema:
+def load_saved_schema(save_dir_path: str) -> TimeStepClassificationSchema:
     """
     Load the saved schema from a JSON file.
 
@@ -393,8 +391,8 @@ def load_saved_schema(save_dir_path: str) -> TSAnnotationSchema:
         save_dir_path (str): The path to load the schema from.
 
     Returns:
-        TSAnnotationSchema: An instance of the
-                                        TSAnnotationSchema.
+        TimeStepClassificationSchema: An instance of the
+                                        TimeStepClassificationSchema.
     """
     file_path = os.path.join(save_dir_path, SCHEMA_FILE_NAME)
     if not os.path.exists(file_path):

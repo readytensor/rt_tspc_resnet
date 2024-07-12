@@ -50,7 +50,7 @@ class Net(Module):
             lr (float): Learning rate for the model.
         """
         super(Net, self).__init__()
-        self.MODEL_NAME = "ResNet_Timeseries_Annotator_residual_blocks"
+        self.MODEL_NAME = "ResNet_TimeStepClassifier_residual_blocks"
 
         self.feat_dim = feat_dim
         self.encode_len = encode_len

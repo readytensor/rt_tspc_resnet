@@ -22,7 +22,6 @@ def create_preprocess_pipelines(
     Returns:
         Tuple[Pipeline, Pipeline]: Tuple of training and inference pipelines
     """
-    scaler = transformers.TimeSeriesMinMaxScaler(columns=data_schema.features)
 
     # Common steps for both train and inference pipelines
     common_steps = [
@@ -49,38 +48,44 @@ def create_preprocess_pipelines(
             ),
         ),
         (
+            "minmax_scaler",
+            transformers.TimeSeriesMinMaxScaler(columns=data_schema.features),
+        ),
+        (
             "padding",
             transformers.PaddingTransformer(
-                id_col=data_schema.id_col, target_col=data_schema.target
+                id_col=data_schema.id_col,
+                target_col=data_schema.target,
+                padding_value=preprocessing_config["padding_value"],
             ),
         ),
-        ("minmax_scaler", scaler),
+        (
+            "target_encoder",
+            transformers.LabelEncoder(columns=[data_schema.target]),
+        ),
+        (
+            "reshaped_3d",
+            transformers.ReshaperToThreeD(
+                id_col=data_schema.id_col,
+                time_col=data_schema.time_col,
+                value_columns=data_schema.features,
+                target_column=data_schema.target,
+            ),
+        ),
     ]
     training_steps = common_steps.copy()
     inference_steps = common_steps.copy()
-    # training-specific steps
 
+    # training-specific steps
     training_steps.extend(
         [
-            (
-                "target_encoder",
-                transformers.LabelEncoder(columns=[data_schema.target]),
-            ),
-            (
-                "reshaped_3d",
-                transformers.ReshaperToThreeD(
-                    id_col=data_schema.id_col,
-                    time_col=data_schema.time_col,
-                    value_columns=data_schema.features,
-                    target_column=data_schema.target,
-                ),
-            ),
             (
                 "window_generator",
                 transformers.TimeSeriesWindowGenerator(
                     window_size=encode_len,
                     stride=1,
                     max_windows=preprocessing_config["max_windows"],
+                    padding_value=preprocessing_config["padding_value"],
                 ),
             ),
         ]
@@ -89,21 +94,13 @@ def create_preprocess_pipelines(
     inference_steps.extend(
         [
             (
-                "reshaped_3d",
-                transformers.ReshaperToThreeD(
-                    id_col=data_schema.id_col,
-                    time_col=data_schema.time_col,
-                    value_columns=data_schema.features,
-                    target_column=data_schema.target,
-                ),
-            ),
-            (
                 "window_generator",
                 transformers.TimeSeriesWindowGenerator(
                     window_size=encode_len,
                     stride=encode_len // 2,
                     max_windows=None,
                     mode="inference",
+                    padding_value=preprocessing_config["padding_value"],
                 ),
             ),
         ]
