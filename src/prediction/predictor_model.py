@@ -126,7 +126,7 @@ class TimeStepClassifier:
                 )
             X = data[:, :, 2:]
             y = data[:, :, 0:2]
-        return X, y
+        return np.float64(X), y
 
     def fit(self, train_data):
         train_X, train_y = self._get_X_and_y(train_data, is_train=True)
