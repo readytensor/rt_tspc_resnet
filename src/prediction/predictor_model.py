@@ -141,8 +141,6 @@ class TimeStepClassifier:
 
         preds = self.net.predict_proba(X)
         preds = np.array(preds)
-        if preds.shape[2] == 2:
-            preds[..., [0, 1]] = preds[..., [1, 0]]
         prob_dict = {}
 
         for index, prediction in enumerate(preds):
