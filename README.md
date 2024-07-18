@@ -1,6 +1,6 @@
 # ResNet Time Step Classifier in Torch
 
-ResNet Time Step Classifcation Model in Torch as per Ready Tensor specifications.
+ResNet Time Step Classification Model in Torch as per Ready Tensor specifications.
 
 ## Project Description
 
@@ -17,7 +17,7 @@ The following are the requirements for using your data with this model:
 
 Here are the highlights of this implementation: <br/>
 
-- A **ResNet Time Step Classifcation n** model built using **Torch**
+- A **ResNet Time Step Classification n** model built using **Torch**
   Additionally, the implementation contains the following features:
 - **Data Validation**: Pydantic data validation is used for the schema, training and test files, as well as the inference request data.
 - **Error handling and logging**: Python's logging module is used for logging and key functions include exception handling.
@@ -26,7 +26,7 @@ Here are the highlights of this implementation: <br/>
 
 The following is the directory structure of the project:
 
-- **`examples/`**: This directory contains example files for the titanic dataset. Three files are included: `hmm_continuous_schema.json`, `hmm_continuous_train.csv` and `hmm_continuous_test.csv`. You can place these files in the `inputs/schema`, `inputs/data/training` and `inputs/data/testing` folders, respectively.
+- **`examples/`**: This directory contains example files for the hmm_continuous dataset. Three files are included: `hmm_continuous_schema.json`, `hmm_continuous_train.csv` and `hmm_continuous_test.csv`. You can place these files in the `inputs/schema`, `inputs/data/training` and `inputs/data/testing` folders, respectively.
 - **`model_inputs_outputs/`**: This directory contains files that are either inputs to, or outputs from, the model. When running the model locally (i.e. without using docker), this directory is used for model inputs and outputs. This directory is further divided into:
   - **`/inputs/`**: This directory contains all the input files for this project, including the `data` and `schema` files. The `data` is further divided into `testing` and `training` subsets.
   - **`/model/artifacts/`**: This directory is used to store the model artifacts, such as trained models and their parameters.
